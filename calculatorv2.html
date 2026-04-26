@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		    <meta charset="UTF-8">
+		        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+			    <title>Pro Car Loan Calc</title>
+			        <style>
+        :root { --primary: #1a2a3a; --accent: #00c853; --btn-hover: #00a846; --card: #ffffff; }
+	        body { font-family: -apple-system, system-ui, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
+		        .app-container { max-width: 450px; margin: auto; background: var(--card); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden; }
+			        .header { background: var(--primary); color: white; padding: 20px; text-align: center; }
+				        .header h1 { margin: 0; font-size: 20px; text-transform: uppercase; }
+					        .content { padding: 20px; }
+						        
+						        .input-box { margin-bottom: 18px; }
+							        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+								        label { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; }
+									        
+									        .toggle-group { display: flex; background: #eee; border-radius: 8px; padding: 2px; }
+										        .toggle-btn { flex: 1; border: none; background: none; padding: 6px 12px; font-size: 10px; font-weight: bold; cursor: pointer; border-radius: 6px; color: #888; }
+											        .toggle-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+												        input, select { width: 100%; padding: 14px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
+													        
+													        /* Main Action Button */
+													        .calc-btn { width: 100%; background: var(--accent); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: 800; cursor: pointer; margin-top: 10px; transition: 0.2s; text-transform: uppercase; }
+														        .calc-btn:active { transform: scale(0.98); background: var(--btn-hover); }
+
+															        .result-panel { background: var(--primary); color: white; padding: 25px; border-radius: 15px; text-align: center; margin-top: 20px; }
+																        .result-val { font-size: 32px; font-weight: 800; color: var(--accent); margin-top: 5px; }
+																	        
+																	        .breakdown { margin-top: 20px; font-size: 13px; color: #666; border-top: 1px solid #eee; padding-top: 15px; }
+																		        .row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+																			        .val { font-weight: 600; color: #222; }
+																				    </style>
+	</head>
+	<body>
+
+		<div class="app-container">
+			    <div class="header"><h1>Car Loan Pro</h1></div>
+			        <div class="content">
+					        <div class="input-box">
+							            <label>Unit Price (₱)</label>
+								                <input type="number" id="unitPrice" value="1248000">
+										        </div>
+
+											        <div class="input-box">
+													            <div class="label-row">
+															                    <label>Down Payment</label>
+																	                    <div class="toggle-group">
+																				                        <button id="dpTypePercent" class="toggle-btn active" onclick="setDPType('percent')">%</button>
+																							                    <button id="dpTypeAmount" class="toggle-btn" onclick="setDPType('amount')">₱</button>
+																									                    </div>
+																											                </div>
+																													            <input type="number" id="dpValue" value="20">
+																														            </div>
+
+																															            <div class="input-box">
+																																	                <div class="label-row">
+																																				                <label>Interest Rate</label>
+																																						                <div class="toggle-group">
+																																									                    <button id="rateTypeAnnual" class="toggle-btn active" onclick="setRateType('annual')">Annual</button>
+																																											                        <button id="rateTypeTotal" class="toggle-btn" onclick="setRateType('total')">Total</button>
+																																														                </div>
+																																																            </div>
+																																																	                <input type="number" id="interestRate" value="6.3" step="0.01">
+																																																			        </div>
+
+																																																				        <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px;">
+																																																						            <div class="input-box"><label>Term (Years)</label>
+																																																								                    <select id="loanTerm">
+																																																											                        <option value="1">1 Year</option><option value="3">3 Years</option><option value="5" selected>5 Years</option>
+																																																														                </select>
+																																																																            </div>
+																																																																	                <div class="input-box"><label>Method</label>
+																																																																				                <select id="method">
+																																																																							                    <option value="arrears">Standard</option><option value="advance">In-Advance (OMA)</option>
+																																																																									                    </select>
+																																																																											                </div>
+																																																																													        </div>
+
+																																																																														        <button class="calc-btn" onclick="calculate()">Calculate Monthly</button>
+
+																																																																															        <div class="result-panel">
+																																																																																	            <small>MONTHLY AMORTIZATION</small>
+																																																																																		                <div id="monthlyResult" class="result-val">₱0.00</div>
+																																																																																				        </div>
+
+																																																																																					        <div class="breakdown">
+																																																																																							            <div class="row"><span>Principal Loan:</span> <span id="outLoan" class="val">₱0.00</span></div>
+																																																																																								                <div class="row" style="color: var(--accent); font-weight: bold;"><span>Cash Out:</span> <span id="outCashOut" class="val">₱0.00</span></div>
+																																																																																										        </div>
+																																																																																											    </div>
+		</div>
+
+		<script>
+			    let dpMode = 'percent', rateMode = 'annual';
+
+			        function setDPType(t) { dpMode = t; updateToggles(); }
+			        function setRateType(t) { rateMode = t; updateToggles(); }
+			        
+			        function updateToggles() {
+					        document.getElementById('dpTypePercent').className = dpMode === 'percent' ? 'toggle-btn active' : 'toggle-btn';
+					        document.getElementById('dpTypeAmount').className = dpMode === 'amount' ? 'toggle-btn active' : 'toggle-btn';
+					        document.getElementById('rateTypeAnnual').className = rateMode === 'annual' ? 'toggle-btn active' : 'toggle-btn';
+					        document.getElementById('rateTypeTotal').className = rateMode === 'total' ? 'toggle-btn active' : 'toggle-btn';
+					    }
+
+			        function calculate() {
+							const principal = 1518000;
+							const totalRate = 0.315; // 31.5%
+							const terms = 60; // 5 years
+							const method = document.getElementById('method').value;
+
+							let monthly = 0;
+							let totalInterestValue = principal * totalRate;
+
+							if (method === 'arrears') {
+								// Standard: Principal + Interest divided by all months
+								monthly = (principal + totalInterestValue) / terms;
+							} else {
+								// OMA: Interest is only applied to the "remaining" balance 
+								// after the first payment is made. 
+								// Logic: Principal / ( (Months / (1 + TotalRate)) + 1 [if applied to first mo])
+								// Most PH banks use this specific OMA divisor:
+								monthly = (principal + totalInterestValue) / (terms + totalRate);
+							}
+
+							document.getElementById('monthlyResult').innerText = '₱' + monthly.toLocaleString(undefined, {minimumFractionDigits: 2});
+						}
+
+			        window.onload = calculate;
+		</script>
+	</body>
+</html>
