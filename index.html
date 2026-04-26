@@ -107,13 +107,27 @@
 					    }
 
 			        function calculate() {
-							const principal = 1518000;
-							const totalRate = 0.315; // 31.5%
-							const terms = 60; // 5 years
-							const method = document.getElementById('method').value;
+							const p = parseFloat(document.getElementById('unitPrice').value) || 0;
+							const dv = parseFloat(document.getElementById('dpValue').value) || 0;
+							const ri = parseFloat(document.getElementById('interestRate').value) || 0;
+							const y = parseInt(document.getElementById('loanTerm').value);
+							const m = document.getElementById('method').value;
+
+							let dp = (dpMode === 'percent') ? p * (dv / 100) : dv;
+							let principal = Math.max(0, p - dp);
+							let totalIntRate = (rateMode === 'annual') ? (ri / 100) * y : (ri / 100);
+							
+							//let monthly = (principal + (principal * totalIntRate)) / (y * 12);
+							let cashOut = 0;
+
+
+							//const principal = parseFloat(document.getElementById('unitPrice').value) || 0;
+							//const totalRate = 0.315; // 31.5%
+							const terms = y * 12; 
+							//const method = document.getElementById('method').value;
 
 							let monthly = 0;
-							let totalInterestValue = principal * totalRate;
+							let totalInterestValue = principal * totalIntRate;
 
 							if (method === 'arrears') {
 								// Standard: Principal + Interest divided by all months
@@ -125,6 +139,7 @@
 								// Most PH banks use this specific OMA divisor:
 								monthly = (principal + totalInterestValue) / (terms + totalRate);
 							}
+							cashOut = (m === 'advance') ? (dp + monthly) : dp;
 
 							document.getElementById('monthlyResult').innerText = '₱' + monthly.toLocaleString(undefined, {minimumFractionDigits: 2});
 							document.getElementById('outLoan').innerText = '₱' + principal.toLocaleString();
