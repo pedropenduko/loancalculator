@@ -127,6 +127,8 @@
 							}
 
 							document.getElementById('monthlyResult').innerText = '₱' + monthly.toLocaleString(undefined, {minimumFractionDigits: 2});
+							document.getElementById('outLoan').innerText = '₱' + principal.toLocaleString();
+        					document.getElementById('outCashOut').innerText = '₱' + cashOut.toLocaleString();
 						}
 
 			        window.onload = calculate;
