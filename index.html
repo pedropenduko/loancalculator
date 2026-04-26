@@ -106,46 +106,78 @@
 					        document.getElementById('rateTypeTotal').className = rateMode === 'total' ? 'toggle-btn active' : 'toggle-btn';
 					    }
 
-			        function calculate() {
-							const p = parseFloat(document.getElementById('unitPrice').value) || 0;
-							const dv = parseFloat(document.getElementById('dpValue').value) || 0;
-							const ri = parseFloat(document.getElementById('interestRate').value) || 0;
-							const y = parseInt(document.getElementById('loanTerm').value);
-							const m = document.getElementById('method').value;
+			        // function calculate() {
+					// 		const p = parseFloat(document.getElementById('unitPrice').value) || 0;
+					// 		const dv = parseFloat(document.getElementById('dpValue').value) || 0;
+					// 		const ri = parseFloat(document.getElementById('interestRate').value) || 0;
+					// 		const y = parseInt(document.getElementById('loanTerm').value);
+					// 		const m = document.getElementById('method').value;
 
-							let dp = (dpMode === 'percent') ? p * (dv / 100) : dv;
-							let principal = Math.max(0, p - dp);
-							let totalIntRate = (rateMode === 'annual') ? (ri / 100) * y : (ri / 100);
+					// 		let dp = (dpMode === 'percent') ? p * (dv / 100) : dv;
+					// 		let principal = Math.max(0, p - dp);
+					// 		let totalIntRate = (rateMode === 'annual') ? (ri / 100) * y : (ri / 100);
 							
-							//let monthly = (principal + (principal * totalIntRate)) / (y * 12);
-							let cashOut = 0;
+					// 		//let monthly = (principal + (principal * totalIntRate)) / (y * 12);
+					// 		let cashOut = 0;
 
 
-							//const principal = parseFloat(document.getElementById('unitPrice').value) || 0;
-							//const totalRate = 0.315; // 31.5%
-							const terms = y * 12; 
-							//const method = document.getElementById('method').value;
+					// 		//const principal = parseFloat(document.getElementById('unitPrice').value) || 0;
+					// 		//const totalRate = 0.315; // 31.5%
+					// 		const terms = y * 12; 
+					// 		//const method = document.getElementById('method').value;
 
-							let monthly = 0;
-							let totalInterestValue = principal * totalIntRate;
+					// 		let monthly = 0;
+					// 		let totalInterestValue = principal * totalIntRate;
 
-							if (m === 'arrears') {
-								// Standard: Principal + Interest divided by all months
-								monthly = (principal + totalInterestValue) / terms;
-							} else {
-								// OMA: Interest is only applied to the "remaining" balance 
-								// after the first payment is made. 
-								// Logic: Principal / ( (Months / (1 + TotalRate)) + 1 [if applied to first mo])
-								// Most PH banks use this specific OMA divisor:
-								monthly = (principal + totalInterestValue) / (terms + totalIntRate);
-								//monthly = principal / ((terms / (1 + totalIntRate)) + 1);
-							}
-							cashOut = (m === 'advance') ? (dp + monthly) : dp;
+					// 		if (m === 'arrears') {
+					// 			// Standard: Principal + Interest divided by all months
+					// 			monthly = (principal + totalInterestValue) / terms;
+					// 		} else {
+					// 			// OMA: Interest is only applied to the "remaining" balance 
+					// 			// after the first payment is made. 
+					// 			// Logic: Principal / ( (Months / (1 + TotalRate)) + 1 [if applied to first mo])
+					// 			// Most PH banks use this specific OMA divisor:
+					// 			monthly = (principal + totalInterestValue) / (terms + totalIntRate);
+					// 			//monthly = principal / ((terms / (1 + totalIntRate)) + 1);
+					// 		}
+					// 		cashOut = (m === 'advance') ? (dp + monthly) : dp;
 
-							document.getElementById('monthlyResult').innerText = '₱' + monthly.toLocaleString(undefined, {minimumFractionDigits: 2});
-							document.getElementById('outLoan').innerText = '₱' + principal.toLocaleString();
-        					document.getElementById('outCashOut').innerText = '₱' + cashOut.toLocaleString();
-						}
+					// 		document.getElementById('monthlyResult').innerText = '₱' + monthly.toLocaleString(undefined, {minimumFractionDigits: 2});
+					// 		document.getElementById('outLoan').innerText = '₱' + principal.toLocaleString();
+        			// 		document.getElementById('outCashOut').innerText = '₱' + cashOut.toLocaleString();
+					// 	}
+
+function calculate() {
+    const p = parseFloat(document.getElementById('unitPrice').value) || 0;
+    const dv = parseFloat(document.getElementById('dpValue').value) || 0;
+    const ri = parseFloat(document.getElementById('interestRate').value) || 0;
+    const y = parseInt(document.getElementById('loanTerm').value) || 5;
+    const m = document.getElementById('method').value;
+
+    // 1. Resolve DP
+    let dp = (dpMode === 'percent') ? p * (dv / 100) : dv;
+    
+    // 2. Resolve Principal
+    let principal = Math.max(0, p - dp);
+
+    // 3. Resolve Interest Rate (Decimal)
+    let rateDec = (rateMode === 'annual') ? (ri / 100) * y : (ri / 100);
+    let totalInterestValue = principal * rateDec;
+
+    // 4. Resolve Amortization
+    const terms = y * 12;
+    let monthly = (m === 'arrears') 
+        ? (principal + totalInterestValue) / terms 
+        : (principal + totalInterestValue) / (terms + rateDec);
+
+    // 5. Resolve Cash Out
+    let cashOut = (m === 'advance') ? (dp + monthly) : dp;
+
+    // 6. Display
+    document.getElementById('monthlyResult').innerText = '₱' + monthly.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('outLoan').innerText = '₱' + principal.toLocaleString();
+    document.getElementById('outCashOut').innerText = '₱' + cashOut.toLocaleString(undefined, {minimumFractionDigits: 2});
+}
 
 			        window.onload = calculate;
 		</script>
