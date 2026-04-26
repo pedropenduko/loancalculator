@@ -137,7 +137,8 @@
 								// after the first payment is made. 
 								// Logic: Principal / ( (Months / (1 + TotalRate)) + 1 [if applied to first mo])
 								// Most PH banks use this specific OMA divisor:
-								monthly = (principal + totalInterestValue) / (terms + totalIntRate);
+								//monthly = (principal + totalInterestValue) / (terms + totalIntRate);
+								monthly = principal / ((terms / (1 + totalIntRate)) + 1);
 							}
 							cashOut = (m === 'advance') ? (dp + monthly) : dp;
 
